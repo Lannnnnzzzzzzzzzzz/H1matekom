@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - <%= user.nama %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="user-dashboard page-fade">
+    <div class="container py-4">
+      <div class="top-navbar">
+        <div class="d-flex align-items-center gap-3">
+          <h4 class="mb-0"><i class="bi bi-grid-fill me-2 text-primary d-none d-sm-inline"></i>Dashboard User</h4>
+        </div>
+        <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap">
+          <span class="badge bg-primary px-3 py-2 d-none d-md-inline"><%= user.nama %></span>
+          <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="bi bi-moon-stars"></i>
+          </button>
+          <a href="/logout" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-box-arrow-right me-1 d-none d-sm-inline"></i>Logout
+          </a>
+        </div>
+      </div>
+
+      <div class="welcome-banner">
+        <h2>Selamat Datang, <%= user.nama %>! 👋</h2>
+        <p class="mb-0">NIM: <%= user.nim %> | Username: <%= user.username %></p>
+      </div>
+
+      <% if (user.kas === 'belum') { %>
+      <div class="alert alert-warning d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+        <div>
+          <strong>Peringatan!</strong> Anda belum membayar uang kas bulan ini. Silakan bayar ke bendahara.
+        </div>
+      </div>
+      <% } else { %>
+      <div class="alert alert-success d-flex align-items-center mb-4">
+        <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+        <div>
+          <strong>Status Kas:</strong> Anda sudah lunas membayar kas bulan ini. Terima kasih! ✓
+        </div>
+      </div>
+      <% } %>
+
+      <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                <i class="bi bi-arrow-down-circle-fill"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Total Pemasukan</small>
+                <h4 class="mb-0">Rp <%= totalPemasukan.toLocaleString('id-ID') %></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon bg-danger bg-opacity-10 text-danger me-3">
+                <i class="bi bi-arrow-up-circle-fill"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Total Pengeluaran</small>
+                <h4 class="mb-0">Rp <%= totalPengeluaran.toLocaleString('id-ID') %></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+          <div class="stat-card">
+            <div class="d-flex align-items-center">
+              <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                <i class="bi bi-wallet2"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Saldo Organisasi</small>
+                <h4 class="mb-0">Rp <%= saldo.toLocaleString('id-ID') %></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-8 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Grafik Keuangan
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="financeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <i class="bi bi-megaphone-fill me-2 text-primary"></i>Pengumuman
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+              <% if (announcements.length === 0) { %>
+                <p class="text-muted text-center py-4">Tidak ada pengumuman</p>
+              <% } else { %>
+                <% announcements.forEach(announcement => { %>
+                  <div class="announcement-card">
+                    <h6 class="mb-2"><%= announcement.judul %></h6>
+                    <p class="mb-2 small"><%= announcement.isi %></p>
+                    <small class="text-muted">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      <%= new Date(announcement.createdAt).toLocaleDateString('id-ID') %>
+                    </small>
+                  </div>
+                <% }) %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/theme.js"></script>
+  <script>
+    const ctx = document.getElementById('financeChart');
+    
+    fetch('/api/transactions/monthly')
+      .then(res => res.json())
+      .then(data => {
+        const months = [...new Set(data.map(d => `${d._id.month}/${d._id.year}`))];
+        const pemasukan = [];
+        const pengeluaran = [];
+        
+        months.forEach(month => {
+          const [m, y] = month.split('/');
+          const pemasukanData = data.find(d => d._id.month == m && d._id.year == y && d._id.jenis === 'pemasukan');
+          const pengeluaranData = data.find(d => d._id.month == m && d._id.year == y && d._id.jenis === 'pengeluaran');
+          
+          pemasukan.push(pemasukanData?.total || 0);
+          pengeluaran.push(pengeluaranData?.total || 0);
+        });
+        
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: months,
+            datasets: [{
+              label: 'Pemasukan',
+              data: pemasukan,
+              borderColor: '#28a745',
+              backgroundColor: 'rgba(40, 167, 69, 0.1)',
+              tension: 0.4
+            }, {
+              label: 'Pengeluaran',
+              data: pengeluaran,
+              borderColor: '#dc3545',
+              backgroundColor: 'rgba(220, 53, 69, 0.1)',
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+              }
+            }
+          }
+        });
+      });
+  </script>
+</body>
+</html>

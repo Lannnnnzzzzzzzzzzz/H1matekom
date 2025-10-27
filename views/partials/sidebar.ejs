@@ -1,0 +1,34 @@
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <h3>HIMAFIN</h3>
+    <p>Admin Panel</p>
+  </div>
+  
+  <nav>
+    <a href="/admin/dashboard" class="nav-link <%= page === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-speedometer2"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/admin/users" class="nav-link <%= page === 'users' ? 'active' : '' %>">
+      <i class="bi bi-people-fill"></i>
+      <span>User Management</span>
+    </a>
+    <a href="/admin/finance" class="nav-link <%= page === 'finance' ? 'active' : '' %>">
+      <i class="bi bi-cash-coin"></i>
+      <span>Keuangan</span>
+    </a>
+    <a href="/admin/inventory" class="nav-link <%= page === 'inventory' ? 'active' : '' %>">
+      <i class="bi bi-box-seam"></i>
+      <span>Inventaris</span>
+    </a>
+    <a href="/admin/announcements" class="nav-link <%= page === 'announcements' ? 'active' : '' %>">
+      <i class="bi bi-megaphone-fill"></i>
+      <span>Pengumuman</span>
+    </a>
+    <hr class="my-3">
+    <a href="/logout" class="nav-link text-danger">
+      <i class="bi bi-box-arrow-right"></i>
+      <span>Logout</span>
+    </a>
+  </nav>
+</div>

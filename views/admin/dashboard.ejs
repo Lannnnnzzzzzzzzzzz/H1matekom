@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - HIMAFIN</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/sidebar') %>
+  
+  <div class="main-content page-fade">
+    <div class="top-navbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h4 class="mb-0"><i class="bi bi-speedometer2 me-2 text-primary d-none d-sm-inline"></i>Dashboard Admin</h4>
+      </div>
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        <span class="badge bg-danger px-3 py-2">Admin</span>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <i class="bi bi-moon-stars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Total User</small>
+              <h4 class="mb-0"><%= totalUsers %></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Total Kas</small>
+              <h4 class="mb-0">Rp <%= totalKas.toLocaleString('id-ID') %></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-info bg-opacity-10 text-info me-3">
+              <i class="bi bi-arrow-down-circle-fill"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Total Pemasukan</small>
+              <h4 class="mb-0">Rp <%= totalPemasukan.toLocaleString('id-ID') %></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+              <i class="bi bi-arrow-up-circle-fill"></i>
+            </div>
+            <div>
+              <small class="text-muted d-block">Total Pengeluaran</small>
+              <h4 class="mb-0">Rp <%= totalPengeluaran.toLocaleString('id-ID') %></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-person-plus-fill fs-1 text-primary mb-3"></i>
+            <h6>Tambah User Baru</h6>
+            <a href="/admin/users" class="btn btn-primary btn-sm mt-2">
+              <i class="bi bi-plus-circle me-1"></i>Kelola User
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-megaphone-fill fs-1 text-success mb-3"></i>
+            <h6>Kirim Pengumuman</h6>
+            <a href="/admin/announcements" class="btn btn-success btn-sm mt-2">
+              <i class="bi bi-plus-circle me-1"></i>Buat Pengumuman
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-cash-coin fs-1 text-info mb-3"></i>
+            <h6>Tambah Transaksi</h6>
+            <a href="/admin/finance" class="btn btn-info btn-sm mt-2 text-white">
+              <i class="bi bi-plus-circle me-1"></i>Kelola Keuangan
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-clock-history me-2"></i>Transaksi Terakhir
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Jenis</th>
+                    <th>Kategori</th>
+                    <th>Nominal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (recentTransactions.length === 0) { %>
+                    <tr><td colspan="4" class="text-center text-muted">Belum ada transaksi</td></tr>
+                  <% } else { %>
+                    <% recentTransactions.forEach(transaction => { %>
+                      <tr>
+                        <td><%= new Date(transaction.tanggal).toLocaleDateString('id-ID') %></td>
+                        <td>
+                          <span class="badge bg-<%= transaction.jenis === 'pemasukan' ? 'success' : 'danger' %>">
+                            <%= transaction.jenis %>
+                          </span>
+                        </td>
+                        <td><%= transaction.kategori %></td>
+                        <td>Rp <%= transaction.nominal.toLocaleString('id-ID') %></td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-wallet2 me-2"></i>Saldo Organisasi
+          </div>
+          <div class="card-body text-center">
+            <h2 class="text-primary mb-3">Rp <%= saldo.toLocaleString('id-ID') %></h2>
+            <div class="progress mb-3" style="height: 10px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: <%= (totalPemasukan / (totalPemasukan + totalPengeluaran) * 100) || 0 %>%"></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <small class="text-success">
+                <i class="bi bi-arrow-down-circle-fill me-1"></i>
+                Pemasukan: <%= ((totalPemasukan / (totalPemasukan + totalPengeluaran) * 100) || 0).toFixed(1) %>%
+              </small>
+              <small class="text-danger">
+                <i class="bi bi-arrow-up-circle-fill me-1"></i>
+                Pengeluaran: <%= ((totalPengeluaran / (totalPemasukan + totalPengeluaran) * 100) || 0).toFixed(1) %>%
+              </small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-bell-fill me-2"></i>Pengumuman Aktif
+          </div>
+          <div class="card-body">
+            <% if (announcements.length === 0) { %>
+              <p class="text-muted text-center">Tidak ada pengumuman</p>
+            <% } else { %>
+              <% announcements.slice(0, 3).forEach(announcement => { %>
+                <div class="mb-3 pb-3 border-bottom">
+                  <h6 class="mb-1"><%= announcement.judul %></h6>
+                  <small class="text-muted"><%= new Date(announcement.createdAt).toLocaleDateString('id-ID') %></small>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

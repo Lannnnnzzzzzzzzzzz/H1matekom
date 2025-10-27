@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengumuman - HIMAFIN</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <% const page = 'announcements' %>
+  <%- include('../partials/sidebar', {page}) %>
+  
+  <div class="main-content page-fade">
+    <div class="top-navbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h4 class="mb-0"><i class="bi bi-megaphone-fill me-2 text-primary d-none d-sm-inline"></i>Pengumuman</h4>
+      </div>
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
+          <i class="bi bi-plus-circle me-1 d-none d-sm-inline"></i><span class="d-none d-sm-inline">Buat </span>Pengumuman
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <i class="bi bi-moon-stars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-bell-fill me-2"></i>Daftar Pengumuman
+          </div>
+          <div class="card-body">
+            <% if (announcements.length === 0) { %>
+              <p class="text-center text-muted py-4">Belum ada pengumuman</p>
+            <% } else { %>
+              <% announcements.forEach(announcement => { %>
+                <div class="announcement-card">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="mb-0"><%= announcement.judul %></h5>
+                    <span class="badge bg-<%= announcement.status === 'aktif' ? 'success' : 'secondary' %>">
+                      <%= announcement.status %>
+                    </span>
+                  </div>
+                  <p class="mb-3"><%= announcement.isi %></p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      <%= new Date(announcement.createdAt).toLocaleDateString('id-ID') %>
+                    </small>
+                    <div>
+                      <% if (announcement.status === 'aktif') { %>
+                        <button class="btn btn-sm btn-warning" onclick="archiveAnnouncement('<%= announcement._id %>')">
+                          <i class="bi bi-archive"></i> Arsipkan
+                        </button>
+                      <% } %>
+                      <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('<%= announcement._id %>')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="bi bi-info-circle me-2"></i>Informasi
+          </div>
+          <div class="card-body">
+            <p class="mb-3">Pengumuman yang Anda buat akan langsung dikirim ke semua user dan ditampilkan di dashboard mereka.</p>
+            <div class="alert alert-info">
+              <i class="bi bi-lightbulb me-2"></i>
+              <strong>Tips:</strong> Buat pengumuman yang jelas dan informatif untuk komunikasi yang efektif dengan anggota.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addAnnouncementModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Buat Pengumuman Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addAnnouncementForm">
+            <div class="mb-3">
+              <label class="form-label">Judul Pengumuman</label>
+              <input type="text" class="form-control" name="judul" placeholder="Contoh: Pembayaran Kas Bulan Januari" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Isi Pengumuman</label>
+              <textarea class="form-control" name="isi" rows="6" placeholder="Tulis isi pengumuman di sini..." required></textarea>
+            </div>
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Pengumuman ini akan langsung dikirim ke semua user setelah disimpan.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveAnnouncement()">
+            <i class="bi bi-send me-1"></i>Kirim Pengumuman
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/theme.js"></script>
+  <script>
+    async function saveAnnouncement() {
+      const form = document.getElementById('addAnnouncementForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      
+      const response = await fetch('/admin/announcements/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        location.reload();
+      } else {
+        alert(result.message);
+      }
+    }
+    
+    async function archiveAnnouncement(id) {
+      if (!confirm('Arsipkan pengumuman ini?')) return;
+      
+      const response = await fetch(`/admin/announcements/archive/${id}`, {
+        method: 'POST'
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        location.reload();
+      } else {
+        alert(result.message);
+      }
+    }
+    
+    async function deleteAnnouncement(id) {
+      if (!confirm('Yakin ingin menghapus pengumuman ini?')) return;
+      
+      const response = await fetch(`/admin/announcements/delete/${id}`, {
+        method: 'POST'
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        location.reload();
+      } else {
+        alert(result.message);
+      }
+    }
+  </script>
+</body>
+</html>
